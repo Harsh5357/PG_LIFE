@@ -1,0 +1,56 @@
+import pandas as pd 
+import numpy as np
+import ast
+movies = pd.read_csv('tmdb_5000_movies.csv')
+credits = pd.read_csv('tmdb_5000_credits.csv')
+movies = movies[['genres','id','keywords','overview','popularity','tagline','title','vote_average']]
+new_df = pd.merge(movies,credits)
+new_df = new_df.drop('id',axis=1)
+def convert(obj):
+    keywords_string = []
+    for i in ast.literal_eval(obj):
+        keywords_string.append(i['name'])
+    return keywords_string
+new_df['keywords']=new_df['keywords'].apply(convert)
+new_df = new_df[new_df['overview'].notna()]
+new_df = new_df.drop('tagline',axis=1)
+new_df['genres'] = new_df['genres'].apply(convert)
+def convert_cast(obj):
+    count = 0
+    L = []
+
+    for i in ast.literal_eval(obj):
+        if count !=3:
+            L.append(i['name'])
+        else:
+            break
+    return L
+new_df['cast'] = new_df['cast'].apply(convert_cast)
+def convert_crew(obj):
+    L = []
+    for i in ast.literal_eval(obj):
+        if i['job'] == 'Director':
+            L.append(i['name'])
+            break
+    return L
+new_df['crew'] = new_df['crew'].apply(convert_crew)
+from sklearn.feature_extraction.text import CountVectorizer
+cv = CountVectorizer()
+new_df['genres_literal'] = new_df['genres'].apply(lambda x: ' '.join(x) if isinstance(x, list) else '')
+
+count_matrix = cv.fit_transform(new_df['genres_literal'])
+from sklearn.metrics.pairwise import cosine_similarity
+
+similarity = cosine_similarity(count_matrix)
+new_df['keywords'] = new_df['keywords'].apply(lambda x:[i.replace(" ","")for i in x])
+new_df['cast'] = new_df['cast'].apply(lambda x:[i.replace(" ","")for i in x])
+new_df['crew'] = new_df['crew'].apply(lambda x:[i.replace(" ","")for i in x])
+def recommend_genre(movie):
+    movie_index = new_df[new_df['title'] == movie].index[0]
+    similarity_scores = similarity[movie_index]
+    movies_list = sorted(list(enumerate(similarity_scores)),reverse=True,key = lambda x: x[1])[1:11]
+    recommended_movies = []
+    
+    for i,scores in movies_list:
+        print(new_df.iloc[i]['title'])
+recommend_genre('Need for Speed')
