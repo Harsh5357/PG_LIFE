@@ -7,8 +7,8 @@ Tech Stack:- HTML, CSS, Bootstrap 5, Javascript, AJAX, PHP, MySQL.
 This web app has the following functionalities:-
 
 The home page:-
-a. Search bar, where user can enter city name(in any case), and PGs listed in that city(if exists in database), will be shown as list.
-b. Contains main cities in the form of circular sections, clicking upon which user can get the list of pgs existing in that city.
+ 
+
 The PG list page:-
 a. Shows the list of all the PGs and their main features in the selected city, in the form of beautiful cards.
 b. Filter bar, using which the PGs can be sorted according to rent and rating, in ascending or descending order.
